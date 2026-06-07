@@ -28,7 +28,11 @@ export default async function handler(req) {
     });
   }
 
-  const { groqApiKey, groqModel, messages } = body;
+  const { groqApiKey: bodyKey, groqModel: bodyModel, messages } = body;
+
+  // Prefer values sent from UI; fall back to server-side env vars
+  const groqApiKey = bodyKey   || globalThis.process?.env?.GROQ_API_KEY;
+  const model      = bodyModel || globalThis.process?.env?.GROQ_MODEL || 'openai/gpt-oss-120b';
 
   if (!groqApiKey || !messages) {
     return new Response(JSON.stringify({ error: 'Missing groqApiKey or messages' }), {
@@ -36,8 +40,6 @@ export default async function handler(req) {
       headers: { ...CORS, 'Content-Type': 'application/json' },
     });
   }
-
-  const model = groqModel || 'openai/gpt-oss-120b';
 
   try {
     const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {

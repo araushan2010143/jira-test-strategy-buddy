@@ -28,7 +28,17 @@ export default async function handler(req) {
     });
   }
 
-  const { jiraBaseUrl, jiraEmail, jiraToken, ticketId } = body;
+  const {
+    jiraBaseUrl: bodyUrl,
+    jiraEmail: bodyEmail,
+    jiraToken: bodyToken,
+    ticketId,
+  } = body;
+
+  // Prefer values sent from UI; fall back to server-side env vars
+  const jiraEmail   = bodyEmail   || globalThis.process?.env?.JIRA_EMAIL;
+  const jiraToken   = bodyToken   || globalThis.process?.env?.JIRA_TOKEN;
+  const jiraBaseUrl = bodyUrl     || globalThis.process?.env?.JIRA_BASE_URL;
 
   if (!jiraBaseUrl || !jiraEmail || !jiraToken || !ticketId) {
     return new Response(JSON.stringify({ error: 'Missing required fields: jiraBaseUrl, jiraEmail, jiraToken, ticketId' }), {
